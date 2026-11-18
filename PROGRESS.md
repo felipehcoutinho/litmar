@@ -8,18 +8,26 @@ el registro solo crece (entradas nuevas arriba).
 
 _Actualizado: 2026-11-18._
 
-- **`main`**: al día con `origin/main`. Último trabajo: la CLI de la demo de la
-  Clase 1 (`--fuente`, `--desde`, `--bibtex`, tabla), ruff, y las diapositivas
-  de la Clase 2 en `docs/Clase2.pdf`.
+- **Git**: la rama de trabajo `day2` parte del último `main` sincronizado con
+  `origin/main` (`2b5422e`). El resumen estructurado y la fábrica de modelos de
+  la Clase 2 están en el árbol de trabajo, aún sin commit.
 - **Curso**: Clase 1 (*Busca*, 17/11/2026) completa respecto a las
-  diapositivas. La siguiente es la Clase 2 (*Lee*), el **18/11/2026**; sus
-  diapositivas están en `docs/Clase2.pdf` y su plan, abajo. **Nada de la Clase 2
-  está empezado.**
-- **Calidad**: 204 tests pasan, sin red, en menos de 1 s; `ruff check` y
-  `ruff format --check` en verde.
+  diapositivas. La Clase 2 (*Lee*, 18/11/2026) está en curso: ya está
+  implementados el resumen estructurado, la fábrica de modelos y el ejemplo de
+  resumen; quedan el flujo de revisión, las herramientas, el agente y la UI.
+- **Calidad**: 216 tests pasan sin red; `ruff check` y `ruff format --check`
+  están en verde.
 - **PRs abiertas**: ninguna.
 - **Funciona**:
   - modelo `Articulo` y `Biblioteca` (dedup por DOI, BibTeX, CSV, JSON);
+  - `resumir(articulo, pregunta, modelo)`, que devuelve un `ResumenArticulo`
+    Pydantic con relevancia validada entre 1 y 5 y no llama al modelo si falta
+    el resumen;
+  - `litmar.llm.crear_modelo()`, que lee `LITMAR_MODELO`, valida la clave del
+    proveedor y usa `init_chat_model`; Gemini queda limitado a 10 solicitudes
+    por minuto dentro del proceso;
+  - `ejemplos/resumir.py`, que busca candidatos en OpenAlex y Europe PMC, y
+    resume tres artículos que tengan resumen;
   - seis fuentes: OpenAlex, Crossref, Europe PMC, arXiv, PANGAEA, Zotero; todas
     admiten `desde` (año mínimo);
   - CLI: `litmar buscar "…" --fuente openalex,europepmc --desde 2020 --bibtex
@@ -32,18 +40,14 @@ _Actualizado: 2026-11-18._
 
 ## Próximos pasos
 
-Por orden de prioridad sugerido; nada está empezado.
+Por orden de prioridad sugerido:
 
 0. [ ] **Comprobar el arnés de memoria**. `SessionStart` **funciona**: el
    18/11/2026, al reanudar la sesión, inyectó el estado de este fichero y de git.
    Falta ver en una sesión real que `Stop` pide anotar el progreso cuando hay
    trabajo sin registrar (los casos se probaron a mano con un repo de prueba).
-1. [ ] **Clase 2**: seguir el «Plan de la Clase 2» (abajo). **Antes de nada,
-   preguntar al usuario** si quiere construirlo ya (como ensayo, igual que se
-   hizo con la Clase 1 lanzando los prompts de las diapositivas en estas
-   sesiones) o dejarlo para hacerlo en directo en clase. Primer paso en
-   cualquier caso: añadir a `.env.example` `LITMAR_MODELO`, `GOOGLE_API_KEY` y
-   `ANTHROPIC_API_KEY` (D-14).
+1. [ ] **Clase 2**: continuar el plan de abajo con el flujo de revisión; después
+   añadir herramientas, agente y UI.
 2. [ ] **Permisos del JSON**: `Biblioteca.guardar` deja `0600`; aplicar la umask
    con `os.chmod` antes de `os.replace`. Propuesto en la PR #10.
 3. [ ] **Mover el helper `cliente` de `tests/test_fuentes.py` a `conftest.py`**,
@@ -61,22 +65,27 @@ diapositiva una columna «En qué fijarse»: el resultado debe superarla. Consul
 la documentación actual de LangChain, LangGraph y deepagents antes de programar
 (cambian rápido) y proponer plan antes de código.
 
-1. [ ] **`.env`** (diapositiva 4): `LITMAR_MODELO=google_genai:gemini-3.8-flash`
+1. [x] **`.env`** (diapositiva 4): `LITMAR_MODELO=google_genai:gemini-3.8-flash`
    + `GOOGLE_API_KEY`, o `anthropic:claude-sonnet-5-5` + `ANTHROPIC_API_KEY`. El
    plan gratuito de Gemini tiene límites por minuto (429) y Google puede usar lo
-   enviado: solo datos públicos.
-2. [ ] **Resumen estructurado**: `resumir(articulo, pregunta, modelo)` → objeto
+   enviado: solo datos públicos. Variables y ejemplos añadidos a `.env.example`.
+2. [x] **Resumen estructurado**: `resumir(articulo, pregunta, modelo)` → objeto
    Pydantic `ResumenArticulo` (objetivo, método, hallazgos, relevancia 1-5
    respecto a la pregunta, limitaciones) con `with_structured_output`. Cada
    campo con descripción (el modelo la lee). Sin resumen → no llamar al modelo.
-   Test con modelo falso, sin clave ni red.
-3. [ ] **Modelo intercambiable**: `src/litmar/llm.py` con `crear_modelo()` que lee
+   Implementado en `src/litmar/resumen.py`; si el resumen falta o está vacío,
+   lanza `ValueError` sin invocar el modelo (D-15). Test con modelo falso, sin
+   clave ni red.
+3. [x] **Modelo intercambiable**: `src/litmar/llm.py` con `crear_modelo()` que lee
    `LITMAR_MODELO` y usa `init_chat_model`; límite de llamadas por minuto para el
    plan gratuito; si falta la clave, error claro que diga qué poner en el `.env`.
-   Ningún nombre de modelo ni clave en el código; cambiar de modelo = cambiar el
-   `.env`.
-4. [ ] **Práctica 1** de los alumnos: `ejemplos/resumir.py` (busca 3 artículos y
-   los resume). Puede convenir tenerlo hecho como referencia.
+   Implementado con límite local compartido de 10 solicitudes/minuto para Gemini
+   (D-16); las cuotas del proveedor varían por proyecto/modelo y no se comparten
+   entre procesos. Si falta la clave, el error indica qué variable añadir al
+   `.env`. Ningún nombre de modelo ni clave secreta en el código.
+4. [x] **Práctica 1** de los alumnos: `ejemplos/resumir.py` busca candidatos en
+   OpenAlex y Europe PMC y resume los tres primeros con abstract; si no hay tres,
+   termina con un mensaje claro. Test de orquestación sin red ni clave.
 5. [ ] **Flujo LangGraph** (`src/litmar/flujo.py`): estado `TypedDict`
    (`EstadoRevision`: pregunta, artículos, resúmenes, informe…); nodos
    `planificar` (LLM: pregunta → 2-3 búsquedas), `buscar` y `filtrar` (código:
@@ -133,6 +142,43 @@ contra esto.
   proponer su hook `_antes_de_peticion` en `Fuente`.
 
 ## Registro de sesiones
+
+### 2026-11-18 — Ejemplo de resumen sobre bacteriófagos de Nitrospira
+
+- Creado `ejemplos/resumir.py`: busca candidatos en OpenAlex y Europe PMC,
+  selecciona tres con resumen y los procesa con `crear_modelo()` y `resumir()`.
+  Si no hay tres, falla antes de crear el modelo; al ejecutarse carga `.env`.
+- Testea la orquestación con búsqueda y resumen simulados, sin red ni claves.
+- Verificación: 216 tests pasan; `ruff check`, `ruff format --check`,
+  `git diff --check` y `uv lock --check` pasan. No se hizo una búsqueda real.
+
+### 2026-11-18 — Fábrica de modelos intercambiables
+
+- Añadido `src/litmar/llm.py`: `crear_modelo()` lee `LITMAR_MODELO`, valida el
+  proveedor (`google_genai` o `anthropic`) y su variable de clave antes de usar
+  `init_chat_model`. Los errores de configuración indican qué añadir al `.env`.
+- Gemini usa un limitador de 10 solicitudes/minuto compartido en el proceso
+  (D-16). La documentación advierte que la cuota de Google depende del modelo y
+  del proyecto y no se coordina entre procesos.
+- Añadidas las variables y ejemplos a `.env.example`, dependencias LangChain y
+  las integraciones Google/Anthropic, documentación en README y descripción del
+  módulo en AGENTS.md.
+- Tests con `init_chat_model` simulado: 214 tests pasan; `ruff check`,
+  `ruff format --check` y `uv lock --check` pasan. Se instanciaron ambos
+  proveedores con claves falsas, sin llamadas de red.
+
+### 2026-11-18 — Resumen estructurado para la Clase 2
+
+- Añadidos `ResumenArticulo` (Pydantic) y `resumir(articulo, pregunta, modelo)`
+  con `with_structured_output`; relevancia validada en 1-5 y campos descritos
+  para el modelo.
+- Sin resumen (incluidos espacios en blanco), se lanza `ValueError` antes de
+  llamar al modelo. El test usa un modelo falso y no usa clave ni red (D-15).
+- Añadidas las dependencias `pydantic` y `langchain-core`, exportación desde
+  `litmar`, documentación del contrato en README y tests.
+- Verificación: 208 tests pasan; `ruff check` y `ruff format --check` pasan.
+- La Clase 2 está en curso; falta continuar con la configuración del modelo y
+  los pasos restantes del plan.
 
 ### 2026-11-18 — Sesión 2: comprobación de los hooks
 

@@ -86,3 +86,16 @@ el nombre estándar de cada proveedor (`GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`),
 que es el que leen las librerías de LangChain. Sustituye a la idea de
 `GEMINI_API_KEY` de la Clase 1. Las diapositivas también nombran
 `CROSSREF_MAILTO`, así que no se renombra a `LITMAR_EMAIL`.
+
+### D-15 · Un artículo sin resumen no se envía al modelo — 2026-11-18
+`resumir` lanza `ValueError` si el resumen está vacío o solo contiene espacios,
+antes de invocar el modelo. Así el contrato de éxito siempre devuelve un
+`ResumenArticulo`; se descarta devolver `None`, que obligaría a tratar una
+ausencia esperable como una salida alternativa al objeto solicitado.
+
+### D-16 · Limitador local compartido para Gemini — 2026-11-18
+`crear_modelo` comparte un `InMemoryRateLimiter` entre los modelos Gemini del
+proceso y limita a 10 solicitudes por minuto, sin ráfagas. Las cuotas reales de
+Google varían según el modelo y el proyecto y se aplican también al uso externo;
+el límite local reduce el ritmo de litmar, pero no sustituye la cuota del
+proveedor ni coordina varios procesos.

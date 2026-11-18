@@ -37,9 +37,19 @@ arXiv y PANGAEA. `.env.example` explica cada variable:
 | `CROSSREF_MAILTO` | Crossref | Entrar en el *polite pool*, con límites más altos |
 | `ZOTERO_USER_ID` o `ZOTERO_GROUP_ID` | Zotero | Biblioteca en la que buscar (sin ella, Zotero no aparece) |
 | `ZOTERO_API_KEY` | Zotero | Solo para bibliotecas privadas |
+| `LITMAR_MODELO` | Resúmenes | Modelo de chat con formato `proveedor:modelo` |
+| `GOOGLE_API_KEY` | Gemini | Clave del proyecto de Google AI Studio |
+| `ANTHROPIC_API_KEY` | Anthropic | Clave del proveedor Anthropic |
 
 `.env` no se sube a git. Las variables que ya estén definidas en el entorno
 tienen prioridad sobre las del fichero.
+
+`litmar.llm.crear_modelo()` crea el modelo configurado con LangChain. Para
+Gemini, limita las solicitudes a 10 por minuto dentro del proceso. Los límites
+reales de Google dependen del modelo y del proyecto; este límite local no cuenta
+las solicitudes de otros procesos ni las de otras aplicaciones del mismo
+proyecto. Consulta los
+[límites de Gemini](https://ai.google.dev/gemini-api/docs/rate-limits).
 
 ## Interfaz web
 
@@ -149,6 +159,13 @@ recuperada.exportar_bibtex("referencias.bib")
   - `obtener(doi)` admite el DOI en cualquier formato.
   - `guardar` y `cargar` leen y escriben el JSON.
   - `a_bibtex` y `a_csv` devuelven el texto exportado.
+- **Resumen estructurado:** `resumir(articulo, pregunta, modelo)` devuelve un
+  `ResumenArticulo` Pydantic con objetivo, método, hallazgos, relevancia y
+  limitaciones. Recibe un modelo ya configurado que implemente
+  `with_structured_output`; si el artículo no tiene resumen, lanza `ValueError`
+  sin llamar al modelo.
+- **Ejemplo de resumen:** ejecuta `uv run python ejemplos/resumir.py` para buscar
+  y resumir tres artículos sobre bacteriófagos de *Nitrospira*.
 - **Fuentes:** todas heredan de `Fuente` e implementan
   `buscar(consulta, n) -> list[Articulo]`. Reintentan solas ante errores de red,
   `429` y `5xx`, con espera exponencial y respetando `Retry-After`.

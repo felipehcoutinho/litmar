@@ -1,7 +1,8 @@
 from litmar.articulo import Articulo
 from litmar.biblioteca import Biblioteca
+from litmar.resumen import ResumenArticulo, resumir
 
-__all__ = ["Articulo", "Biblioteca", "main"]
+__all__ = ["Articulo", "Biblioteca", "ResumenArticulo", "main", "resumir"]
 
 
 def main() -> None:

@@ -144,7 +144,7 @@ del Mar, tres clases, imparte Roberto Bada). Las diapositivas están en `docs/`
 
 ```bash
 uv sync                          # instala todo, incluido el grupo dev (pytest, ruff, streamlit)
-uv run pytest                    # tests (sin red; ~204, menos de 1 s)
+uv run pytest                    # tests (sin red; ~216)
 uv run ruff check --fix          # lint (reglas E, W, F, I, UP, B; línea de 100)
 uv run ruff format               # formato
 uv run litmar --help             # CLI
@@ -175,12 +175,17 @@ src/litmar/
                      salida en tabla), exportar, ui
   configuracion.py   FUENTES, fuentes_disponibles(), crear_fuente(nombre),
                      id_fuente()/nombre_fuente() («Europe PMC» ↔ «europepmc»)
+  llm.py             crear_modelo(): init_chat_model con LITMAR_MODELO y
+                     limitador local de llamadas para Gemini
+  resumen.py         ResumenArticulo y resumir(): resumen Pydantic estructurado
   ui.py              Streamlit: filas(), app()
   fuentes/
     base.py          Fuente (ABC): buscar(consulta, n, *, desde=None) abstracto;
                      _admite (validez + año); _get/_get_json con reintentos
     openalex.py crossref.py europepmc.py arxiv.py pangaea.py zotero.py
 docs/                diapositivas del curso (PDF)
+ejemplos/            scripts educativos ejecutables; resumir.py busca y resume
+                     tres artículos con el modelo configurado en .env
 tests/
   conftest.py        fixture hacer_articulo (fábrica de Articulo válidos)
   test_*.py          uno por módulo/fuente; test_ui.py usa streamlit.testing
@@ -281,6 +286,9 @@ en `.env.example`.
   empiezan por `--`; por eso `litmar ui` usa `parse_known_args`.
 - **`.env` solo se carga en `litmar.main()`** (la entrada del comando), no en
   `cli.main(argv)`: así los tests no leen el `.env` real.
+- **Cuotas de Gemini**: las solicitudes se limitan por proyecto y las RPM varían
+  según modelo y cuenta. `InMemoryRateLimiter` solo coordina modelos del mismo
+  proceso; no limita otros procesos ni otros clientes del proyecto.
 - **`ruff format` también formatea los bloques de Python del README** (alinea
   distinto los comentarios). Es normal ver el README en el diff tras formatear.
 - **`Retry-After: 0`** es válido: comprobar con `is None`, no con `or`.
