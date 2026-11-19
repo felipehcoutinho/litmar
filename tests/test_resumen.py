@@ -64,6 +64,22 @@ def test_envia_pregunta_titulo_y_resumen(hacer_articulo):
     assert "Estudiamos 300 praderas de Posidonia." in texto
 
 
+@pytest.mark.parametrize(
+    ("idioma", "instruccion"),
+    [
+        ("pt-BR", "português do Brasil"),
+        ("en", "exclusively in English"),
+        ("ja", "日本語のみ"),
+    ],
+)
+def test_indica_al_modelo_el_idioma_seleccionado(hacer_articulo, idioma, instruccion):
+    modelo = ModeloFalso()
+
+    resumir(hacer_articulo(), "question", modelo, idioma=idioma)
+
+    assert instruccion in texto_enviado(modelo)
+
+
 @pytest.mark.parametrize("abstract", ["", "   \n"])
 def test_sin_resumen_no_llama_al_modelo(hacer_articulo, abstract):
     modelo = ModeloFalso()

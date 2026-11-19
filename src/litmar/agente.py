@@ -46,7 +46,10 @@ from langgraph.types import Command
 
 from litmar import herramientas
 from litmar.articulo import Articulo
-from litmar.flujo import NO_VERIFICADA, EstadoRevision, extraer_dois, marcar_no_verificadas
+from litmar.flujo import EstadoRevision, extraer_dois, marcar_no_verificadas
+from litmar.idiomas import INSTRUCCIONES as INSTRUCCIONES_IDIOMA
+from litmar.idiomas import Idioma
+from litmar.idiomas import texto as texto_de_idioma
 from litmar.seleccion import PESO_CITAS, PESO_RELEVANCIA, aviso_citas_no_disponibles
 
 if TYPE_CHECKING:
@@ -81,13 +84,14 @@ Cómo trabajar:
    pone «Citas: no disponible», usa solo la relevancia; no lo trates como cero.
 
 Reglas del informe:
-- En español y en Markdown, de 3 a 5 párrafos, sin título y sin lista de referencias
+- En el idioma seleccionado y en Markdown, de 3 a 5 párrafos, sin título y sin lista de referencias
   (la añade el programa).
 - Cita cada afirmación con el DOI entre corchetes, exactamente así: [doi:10.1234/abcd].
 - Cita solo DOI que te haya devuelto el buscador. Nunca cites de memoria: el programa
   comprueba cada DOI y marca los que no salieron de las búsquedas.
-- Termina con una sección «## Lo que no se encontró»: qué aspectos de la pregunta no
-  cubren los artículos encontrados y qué búsquedas no dieron resultado.
+- Termina con una sección cuyo título traduzca «Lo que no se encontró» al idioma
+  seleccionado: qué aspectos de la pregunta no cubren los artículos encontrados
+  y qué búsquedas no dieron resultado.
 - PANGAEA devuelve conjuntos de datos, no artículos: úsalos solo como apoyo.
 - Si no encuentras nada útil, dilo en el informe en lugar de rellenarlo."""
 
@@ -173,6 +177,7 @@ def crear_agente(
     fuentes: Iterable[str] = ("OpenAlex", "Europe PMC"),
     n: int = 6,
     desde: int | None = None,
+    idioma: Idioma = "es",
     aprobar: bool = False,
 ):
     """Construye el agente revisor. Devuelve un grafo de LangGraph, como el flujo."""
@@ -198,7 +203,9 @@ def crear_agente(
             ruta=RUTA_INFORME,
             peso_relevancia=PESO_RELEVANCIA,
             peso_citas=PESO_CITAS,
-        ),
+        )
+        + "\n\n"
+        + INSTRUCCIONES_IDIOMA[idioma],
         middleware=[
             TodoListMiddleware(),  # write_todos: la lista de tareas
             FilesystemMiddleware(backend=backend, tools=["ls", "read_file", "write_file"]),
@@ -335,6 +342,7 @@ def revisar(
     fuentes: Iterable[str] = ("OpenAlex", "Europe PMC"),
     n: int = 6,
     desde: int | None = None,
+    idioma: Idioma = "es",
     aprobar: bool = False,
     mostrar: Callable[[str], None] = lambda linea: None,
     decidir: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
@@ -344,7 +352,9 @@ def revisar(
     Sin `decidir`, se aprueba todo (solo se usa con `aprobar=True`).
     """
     registro = Registro()
-    revisor = crear_agente(modelo, registro, fuentes=fuentes, n=n, desde=desde, aprobar=aprobar)
+    revisor = crear_agente(
+        modelo, registro, fuentes=fuentes, n=n, desde=desde, idioma=idioma, aprobar=aprobar
+    )
     config = configuracion()
     ejecutar(
         revisor,
@@ -353,11 +363,15 @@ def revisar(
         mostrar=mostrar,
         decidir=decidir or (lambda accion: {"type": "approve"}),
     )
-    return estado_final(revisor, config, pregunta, registro)
+    return estado_final(revisor, config, pregunta, registro, idioma)
 
 
 def estado_final(
-    agente, config: dict[str, Any], pregunta: str, registro: Registro
+    agente,
+    config: dict[str, Any],
+    pregunta: str,
+    registro: Registro,
+    idioma: Idioma = "es",
 ) -> EstadoRevision:
     """El resultado del agente con la forma del estado del flujo, citas ya comprobadas.
 
@@ -379,11 +393,11 @@ def estado_final(
     if any(
         isinstance(m, AIMessage) and str(m.content).startswith(_LIMITE_ALCANZADO) for m in mensajes
     ):
-        avisos.append(f"El agente alcanzó el límite de {MAX_PASOS} pasos sin terminar.")
+        avisos.append(texto_de_idioma(idioma, "limite_agente").format(max_pasos=MAX_PASOS))
         informe = (
-            (informe or "_El agente no llegó a escribir el informe._")
-            + "\n\n## Hasta dónde llegó\n\n"
-            + f"El agente se detuvo al alcanzar el límite de {MAX_PASOS} pasos.\n\n"
+            (informe or f"_{texto_de_idioma(idioma, 'sin_informe_agente')}_")
+            + f"\n\n## {texto_de_idioma(idioma, 'hasta_donde')}\n\n"
+            + f"{texto_de_idioma(idioma, 'agente_detencion')}\n\n"
             + "\n".join(f"- {_casilla(t)} {t.get('content', '')}" for t in valores.get("todos", []))
         )
 
@@ -391,10 +405,11 @@ def estado_final(
     validos = [doi for doi in citados if doi in registro.articles]
     invalidos = [doi for doi in citados if doi not in registro.articles]
     if invalidos:
-        informe = marcar_no_verificadas(informe, invalidos)
+        informe = marcar_no_verificadas(informe, invalidos, idioma)
+        marca = texto_de_idioma(idioma, "no_verificada")
         avisos.append(
-            "El informe citaba DOI que no salieron de ninguna búsqueda "
-            f"({', '.join(invalidos)}): marcados como «{NO_VERIFICADA}»."
+            f"{texto_de_idioma(idioma, 'doi_no_busqueda')} ({', '.join(invalidos)}): "
+            f"{texto_de_idioma(idioma, 'marca_no_verificada').format(marca=marca)}"
         )
     aviso = aviso_citas_no_disponibles(
         registro.articles[doi] for doi in validos if doi in registro.articles

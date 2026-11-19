@@ -157,7 +157,7 @@ del Mar, tres clases, imparte Roberto Bada). Las diapositivas están en `docs/`
 
 ```bash
 uv sync                          # instala todo, incluido el grupo dev (pytest, ruff, streamlit)
-uv run pytest                    # tests (sin red; ~343, ~3 s)
+uv run pytest                    # tests (sin red; ~351, ~13 s)
 uv run ruff check --fix          # lint (reglas E, W, F, I, UP, B; línea de 100)
 uv run ruff format               # formato
 uv run litmar --help             # CLI
@@ -216,8 +216,11 @@ src/litmar/
                      modelos ArticuloSalida, BusquedaSalida, RevisionEntrada,
                      RevisionSalida; validador de fuentes (→ 422). Sin token.
                      GET / sirve web/index.html del paquete
+  idiomas.py         idiomas de la web e informes (es, pt-BR, en, ja), con
+                     instrucciones para el modelo y rótulos del informe
   web/index.html     web (D-25): HTML+CSS+JS sin npm; usa /fuentes, /buscar y
-                     /revisiones con rutas relativas; conversor de Markdown propio
+                     /revisiones con rutas relativas; selector de idioma; conversor
+                     de Markdown propio
   ui.py              Streamlit: filas(), app() con pestañas busqueda() y revision();
                      la revisión reutiliza flujo.revisar / agente.revisar
   fuentes/

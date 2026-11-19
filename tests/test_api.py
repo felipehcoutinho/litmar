@@ -199,8 +199,8 @@ def test_revision_con_el_agente(con_modelo, monkeypatch, hacer_articulo):
     articulo = hacer_articulo(doi="10.1/a")
     llamadas = []
 
-    def revisar_falso(modelo, pregunta, *, fuentes, n, desde, mostrar):
-        llamadas.append((pregunta, fuentes, n, desde))
+    def revisar_falso(modelo, pregunta, *, fuentes, n, desde, idioma, mostrar):
+        llamadas.append((pregunta, fuentes, n, desde, idioma))
         return {
             "question": pregunta,
             "queries": ["redes"],
@@ -220,13 +220,15 @@ def test_revision_con_el_agente(con_modelo, monkeypatch, hacer_articulo):
             "sources": ["openalex", "europepmc", "openalex"],
             "n": 4,
             "since": 2020,
+            "language": "en",
         },
     )
 
     assert respuesta.status_code == 200
-    assert llamadas == [("¿Sirven las redes?", ["OpenAlex", "Europe PMC"], 4, 2020)]
+    assert llamadas == [("¿Sirven las redes?", ["OpenAlex", "Europe PMC"], 4, 2020, "en")]
     datos = respuesta.json()
     assert datos["mode"] == "agente"
+    assert datos["language"] == "en"
     assert [a["doi"] for a in datos["cited"]] == ["10.1/a"]
     assert "@article" in datos["bibtex"]
 
@@ -234,14 +236,44 @@ def test_revision_con_el_agente(con_modelo, monkeypatch, hacer_articulo):
 def test_revision_con_las_fuentes_por_defecto(con_modelo, monkeypatch):
     llamadas = []
 
-    def revisar_falso(modelo, pregunta, *, fuentes, n, desde, mostrar):
-        llamadas.append((fuentes, n, desde))
+    def revisar_falso(modelo, pregunta, *, fuentes, n, desde, idioma, mostrar):
+        llamadas.append((fuentes, n, desde, idioma))
         return {"question": pregunta, "report": "Sin artículos.", "cited": [], "warnings": []}
 
     monkeypatch.setattr("litmar.flujo.revisar", revisar_falso)
 
     assert cliente.post("/revisiones", json={"question": "x"}).status_code == 200
-    assert llamadas == [(["OpenAlex", "Europe PMC"], 6, None)]
+    assert llamadas == [(["OpenAlex", "Europe PMC"], 6, None, "es")]
+
+
+def test_revision_en_japones_localiza_el_informe(con_modelo, monkeypatch):
+    def revisar_falso(modelo, pregunta, *, fuentes, n, desde, idioma, mostrar):
+        assert idioma == "ja"
+        return {
+            "question": pregunta,
+            "queries": [],
+            "report": "日本語のレポート。",
+            "cited": [],
+            "warnings": [],
+        }
+
+    monkeypatch.setattr("litmar.flujo.revisar", revisar_falso)
+    respuesta = cliente.post(
+        "/revisiones",
+        json={"question": "質問", "sources": ["openalex"], "language": "ja"},
+    )
+
+    assert respuesta.status_code == 200
+    datos = respuesta.json()
+    assert datos["language"] == "ja"
+    assert "日本語のレポート" in datos["report"]
+    assert "## 参考文献" not in datos["report"]
+
+
+def test_revision_rechaza_un_idioma_no_admitido(con_modelo):
+    respuesta = cliente.post("/revisiones", json={"question": "x", "language": "fr"})
+
+    assert respuesta.status_code == 422
 
 
 def test_revision_sin_modelo_da_503_y_dice_que_poner_en_el_env(monkeypatch, fuentes):
@@ -302,6 +334,10 @@ def test_la_api_sirve_la_pagina_en_la_raiz():
     assert respuesta.status_code == 200
     assert respuesta.headers["content-type"].startswith("text/html")
     assert "<title>litmar</title>" in respuesta.text
+    assert 'value="pt-BR"' in respuesta.text
+    assert 'value="en"' in respuesta.text
+    assert 'value="ja"' in respuesta.text
+    assert 'language: $("idioma").value' in respuesta.text
 
 
 def test_la_pagina_solo_usa_rutas_del_contrato_y_relativas():

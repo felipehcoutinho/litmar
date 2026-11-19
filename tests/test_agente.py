@@ -157,8 +157,17 @@ def test_las_instrucciones_dicen_lo_que_queremos():
     assert "Cita solo DOI que te haya devuelto el buscador" in texto
     assert "70% de relevancia" in texto
     assert "Citas: no disponible" in texto
-    assert "## Lo que no se encontró" in texto
+    assert "traduzca «Lo que no se encontró»" in texto
     assert "relevancia para el encargo (1–5)" in agente.INSTRUCCIONES_BUSCADOR
+
+
+def test_agente_recibe_el_idioma_seleccionado(monkeypatch):
+    argumentos = {}
+    monkeypatch.setattr(agente, "create_deep_agent", lambda **kwargs: argumentos.update(kwargs))
+
+    agente.crear_agente(ModeloGuion(), agente.Registro(), idioma="ja")
+
+    assert "日本語のみで回答してください。" in argumentos["system_prompt"]
 
 
 def test_estado_final_avisa_si_un_doi_citado_no_tiene_recuento(hacer_articulo):

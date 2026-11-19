@@ -40,6 +40,8 @@ from litmar.articulo import Articulo, normalizar_doi
 from litmar.biblioteca import Biblioteca
 from litmar.busqueda import buscar_en_fuentes
 from litmar.fuentes import Fuente
+from litmar.idiomas import INSTRUCCIONES, Idioma
+from litmar.idiomas import texto as texto_de_idioma
 from litmar.resumen import ResumenArticulo, resumir
 from litmar.seleccion import aviso_citas_no_disponibles, ordenar_articulos
 
@@ -93,7 +95,7 @@ Eres un documentalista científico. Convierte la pregunta de investigación en 2
 búsquedas distintas para bases de datos académicas."""
 
 _INSTRUCCIONES_SINTESIS = """\
-Eres un investigador que escribe una síntesis breve de literatura científica en español.
+Eres un investigador que escribe una síntesis breve de literatura científica.
 Responde a la pregunta usando SOLO los artículos que se te dan.
 - Cita cada afirmación con el DOI del artículo entre corchetes, exactamente así:
   [doi:10.1234/abcd]. Para dos artículos: [doi:10.1234/abcd] [doi:10.5678/efgh].
@@ -117,16 +119,17 @@ def extraer_dois(texto: str) -> list[str]:
     return dois
 
 
-def marcar_no_verificadas(texto: str, invalidos: Iterable[str]) -> str:
+def marcar_no_verificadas(texto: str, invalidos: Iterable[str], idioma: Idioma = "es") -> str:
     """Sustituye cada cita a un DOI de `invalidos` por «cita no verificada»."""
     invalidos = set(invalidos)
+    marca = texto_de_idioma(idioma, "no_verificada")
 
     def sustituir(coincidencia: re.Match[str]) -> str:
         try:
             doi = normalizar_doi(coincidencia.group(2).rstrip("."))
         except ValueError:
             return coincidencia.group(0)
-        return NO_VERIFICADA if doi in invalidos else coincidencia.group(0)
+        return marca if doi in invalidos else coincidencia.group(0)
 
     return _CITA.sub(sustituir, texto)
 
@@ -155,6 +158,7 @@ def crear_flujo(
     fuentes: Iterable[str] = ("OpenAlex",),
     n: int = 6,
     desde: int | None = None,
+    idioma: Idioma = "es",
     crear_fuente: Callable[[str], Fuente] | None = None,
 ):
     """Construye y compila el grafo de revisión.
@@ -194,7 +198,7 @@ def crear_flujo(
             if not articulo.abstract.strip():
                 continue
             try:
-                resumen = resumir(articulo, estado["question"], modelo)
+                resumen = resumir(articulo, estado["question"], modelo, idioma=idioma)
             except Exception as error:  # un artículo que falla no para la revisión
                 avisos.append(f"No se pudo resumir {articulo.doi}: {type(error).__name__}")
                 continue
@@ -215,7 +219,7 @@ def crear_flujo(
     def sintetizar(estado: EstadoRevision) -> EstadoRevision:  # LLM
         resumenes = estado.get("summaries", {})
         if not resumenes:  # sin artículos no hay nada que sintetizar: no se llama al modelo
-            return {"report": "No se encontraron artículos con resumen para esta pregunta."}
+            return {"report": texto_de_idioma(idioma, "no_articulos")}
 
         fichas = "\n\n".join(
             _ficha(articulo, resumenes[articulo.doi])
@@ -223,7 +227,7 @@ def crear_flujo(
             if articulo.doi in resumenes
         )
         mensajes = [
-            ("system", _INSTRUCCIONES_SINTESIS),
+            ("system", f"{_INSTRUCCIONES_SINTESIS}\n{INSTRUCCIONES[idioma]}"),
             ("human", f"Pregunta: {estado['question']}\n\nArtículos:\n\n{fichas}"),
         ]
         cambios: EstadoRevision = {}
@@ -248,12 +252,12 @@ def crear_flujo(
         invalidos = [doi for doi in citados if doi not in seleccionados]
         cambios: EstadoRevision = {"cited": validos, "invalid": invalidos}
         if invalidos and not _quedan_reescrituras(estado):
-            cambios["report"] = marcar_no_verificadas(estado["report"], invalidos)
+            cambios["report"] = marcar_no_verificadas(estado["report"], invalidos, idioma)
             cambios["unverified"] = invalidos
             cambios["warnings"] = [
                 f"Tras {MAX_REESCRITURAS} reescrituras seguían citados DOI que no estaban "
                 f"entre los seleccionados ({', '.join(invalidos)}): marcados como "
-                f"«{NO_VERIFICADA}»."
+                f"«{texto_de_idioma(idioma, 'no_verificada')}»."
             ]
         return cambios
 
@@ -295,6 +299,7 @@ def revisar(
     fuentes: Iterable[str] = ("OpenAlex",),
     n: int = 6,
     desde: int | None = None,
+    idioma: Idioma = "es",
     mostrar: Callable[[str], None] = lambda linea: None,
     avisar: Callable[[str], None] | None = None,
 ) -> EstadoRevision:
@@ -304,7 +309,7 @@ def revisar(
     escribe en pantalla); los avisos, a `avisar` (por defecto, también a `mostrar`).
     """
     avisar = avisar or mostrar
-    flujo = crear_flujo(modelo, fuentes=fuentes, n=n, desde=desde)
+    flujo = crear_flujo(modelo, fuentes=fuentes, n=n, desde=desde, idioma=idioma)
     estado = estado_inicial(pregunta)
     # "updates": lo que cambia cada nodo, para mostrarlo; "values": el estado completo.
     for modo, datos in flujo.stream(estado, stream_mode=["updates", "values"]):
@@ -361,7 +366,7 @@ def enlazar_dois(texto: str) -> str:
     )
 
 
-def informe_markdown(estado: EstadoRevision) -> str:
+def informe_markdown(estado: EstadoRevision, idioma: Idioma = "es") -> str:
     """El informe completo: pregunta, búsquedas, síntesis y referencias.
 
     Las referencias las escribe el código a partir de los artículos citados, no
@@ -370,16 +375,20 @@ def informe_markdown(estado: EstadoRevision) -> str:
     partes = [f"# {estado['question']}", ""]
     if estado.get("queries"):
         busquedas = ", ".join(f"«{q}»" for q in estado["queries"])
-        partes += [f"_Búsquedas: {busquedas}._", ""]
+        partes += [f"_{texto_de_idioma(idioma, 'busquedas')}: {busquedas}._", ""]
     partes += [estado.get("report", "").strip(), ""]
     referencias = citados(estado)
     if len(referencias):
-        partes += ["## Referencias", ""]
+        partes += [f"## {texto_de_idioma(idioma, 'referencias')}", ""]
         partes += [
             f"- {a.short_citation}. {a.title}. *{a.journal}*. https://doi.org/{a.doi}"
             for a in referencias
         ]
         partes.append("")
     if estado.get("warnings"):
-        partes += ["## Avisos", ""] + [f"- {aviso}" for aviso in estado["warnings"]] + [""]
+        partes += (
+            [f"## {texto_de_idioma(idioma, 'avisos')}", ""]
+            + [f"- {aviso}" for aviso in estado["warnings"]]
+            + [""]
+        )
     return "\n".join(partes)

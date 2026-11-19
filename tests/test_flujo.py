@@ -224,6 +224,29 @@ def test_un_resumen_que_falla_no_para_la_revision(crear_fuente):
     assert any("10.1/c" in aviso for aviso in estado["warnings"])
 
 
+def test_revision_pasa_idioma_a_resumenes_y_a_la_sintesis(monkeypatch, crear_fuente):
+    idiomas = []
+
+    def resumir_falso(articulo, pregunta, modelo, *, idioma):
+        idiomas.append(idioma)
+        return ResumenArticulo(
+            objective="Objective",
+            method="Method",
+            findings=["Finding"],
+            relevance=4,
+            limitations="None.",
+        )
+
+    monkeypatch.setattr("litmar.flujo.resumir", resumir_falso)
+    modelo = ModeloFalso(["A report."])
+    grafo = crear_flujo(modelo, fuentes=["OpenAlex"], idioma="en", crear_fuente=crear_fuente)
+
+    grafo.invoke(estado_inicial(PREGUNTA))
+
+    assert idiomas and set(idiomas) == {"en"}
+    assert "Respond exclusively in English." in modelo.sintesis[0][0][1]
+
+
 def test_citar_un_seleccionado_sin_resumen_tambien_es_invalido(crear_fuente):
     # El modelo solo ve los seleccionados: citar otro es inventar.
     modelo = ModeloFalso(["Según [doi:10.1/c]."])
@@ -327,6 +350,24 @@ def test_informe_markdown_solo_referencia_lo_citado(hacer_articulo):
     assert "Título B" in texto and "https://doi.org/10.1/b" in texto
     assert "Título C" not in texto
     assert "## Avisos" in texto and "HTTP 503" in texto
+
+
+def test_informe_markdown_localiza_los_titulos(hacer_articulo):
+    articulo = hacer_articulo(doi="10.1/b")
+    estado = {
+        "question": "Research question",
+        "queries": ["posidonia"],
+        "selected": [articulo],
+        "report": "Report.",
+        "cited": [articulo.doi],
+        "warnings": ["Warning."],
+    }
+
+    texto = informe_markdown(estado, "en")
+
+    assert "_Searches: «posidonia»._" in texto
+    assert "## References" in texto
+    assert "## Warnings" in texto
 
 
 # --- Comando `litmar revisar`

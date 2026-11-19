@@ -17,11 +17,10 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel, Field
 
 from litmar.articulo import Articulo
+from litmar.idiomas import INSTRUCCIONES, Idioma
 
 if TYPE_CHECKING:
     from langchain_core.language_models import BaseChatModel
-
-NO_CONSTA = "No consta en el resumen."
 
 
 class ResumenArticulo(BaseModel):
@@ -50,19 +49,25 @@ class ResumenArticulo(BaseModel):
     limitations: str = Field(
         description=(
             "Limitaciones que reconocen los autores o que se deducen del resumen "
-            f"(muestra, zona, método). Si no se puede saber, escribe «{NO_CONSTA}»"
+            "(muestra, zona, método). Si no se puede saber, indícalo en el idioma solicitado."
         )
     )
 
 
-_INSTRUCCIONES = f"""\
+_INSTRUCCIONES = """\
 Eres un asistente que resume artículos científicos para una revisión de literatura.
 Usa solo la información del título y del resumen que se te dan: no añadas datos
-de otros trabajos ni de tu memoria. Si algo no aparece en el resumen, escribe
-«{NO_CONSTA}» en lugar de suponerlo. Responde en español."""
+de otros trabajos ni de tu memoria. Si algo no aparece en el resumen, indícalo
+brevemente en el idioma solicitado en lugar de suponerlo."""
 
 
-def resumir(articulo: Articulo, pregunta: str, modelo: BaseChatModel) -> ResumenArticulo | None:
+def resumir(
+    articulo: Articulo,
+    pregunta: str,
+    modelo: BaseChatModel,
+    *,
+    idioma: Idioma = "es",
+) -> ResumenArticulo | None:
     """Resume `articulo` con `modelo` y puntúa su relevancia para `pregunta`.
 
     Devuelve `None` sin llamar al modelo si el artículo no tiene resumen: sin
@@ -72,7 +77,7 @@ def resumir(articulo: Articulo, pregunta: str, modelo: BaseChatModel) -> Resumen
         return None
 
     mensajes = [
-        ("system", _INSTRUCCIONES),
+        ("system", f"{_INSTRUCCIONES}\n{INSTRUCCIONES[idioma]}"),
         (
             "human",
             f"Pregunta de investigación: {pregunta}\n\n"

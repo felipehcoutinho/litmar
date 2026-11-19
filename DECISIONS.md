@@ -235,3 +235,12 @@ que funcione igual instalada o en Docker. Solo usa `/fuentes`, `/buscar` y
 - Los datos de la API se pintan con `textContent`, nunca con `innerHTML`; el
   BibTeX y el informe se descargan con un `Blob`, sin otra petición. Los 422 se
   traducen campo a campo; sin JSON (p. ej. un 502 de nginx), «HTTP N».
+
+### D-26 · Idioma seleccionado para la web y el informe — 2026-11-19
+La web permite español, portugués de Brasil, inglés y japonés. Envía el idioma
+seleccionado como `language` en `POST /revisiones` (`es`, `pt-BR`, `en`, `ja`);
+se conserva español como valor por defecto para no cambiar a los clientes
+existentes. El idioma se aplica a los prompts de resumen y síntesis (flujo) o al
+prompt del agente, y a los rótulos que genera el código en el informe. Los
+títulos y metadatos de los artículos no se traducen. Así no se hace una segunda
+llamada al modelo para traducir resultados ni se alteran datos bibliográficos.

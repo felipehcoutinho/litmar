@@ -8,8 +8,9 @@ el registro solo crece (entradas nuevas arriba).
 
 _Actualizado: 2026-11-19._
 
-- **`main`**: al día con `origin/main`. Último trabajo: la API con FastAPI
-  (Clase 3, encargo 1).
+- **`main`**: `67ce3f3`, al día con `origin/main`; los cambios de esta sesión
+  están sin commit. Último trabajo: selector multilingüe y revisiones en el
+  idioma seleccionado.
   Antes: fusión de la PR #15 (felipehcoutinho), selección combinada por
   relevancia y citas anualizadas (D-23).
 - **Curso**: Clase 1 (*Busca*, 17/11/2026) completa respecto a las
@@ -21,7 +22,7 @@ _Actualizado: 2026-11-19._
   La Clase 3 (*APIs, reproducibilidad y transferencia*, **19/11/2026**) tiene
   sus diapositivas en `docs/Clase3.pdf` y su plan abajo; hechos los encargos 1
   (API con FastAPI y `litmar servir`) y 2 (web en `/`).
-- **Calidad**: 343 tests pasan, sin red, en ~3 s; `ruff check` y
+- **Calidad**: 351 tests pasan, sin red, en ~13 s; `ruff check` y
   `ruff format --check` en verde.
 - **PRs abiertas**: ninguna.
 - **Funciona**:
@@ -56,21 +57,22 @@ _Actualizado: 2026-11-19._
     documentación en `/docs`; sin token;
   - web en `/` (`src/litmar/web/index.html`, D-25): búsqueda, tabla con DOI
     enlazados, revisión con el informe en Markdown renderizado y descarga del
-    BibTeX; sin npm, rutas relativas;
+    BibTeX; selector es/pt-BR/en/ja, informe generado en el idioma seleccionado;
+    sin npm, rutas relativas, estética Y2K cromada;
   - configuración por `.env` (plantilla en `.env.example`; todo opcional salvo
     Zotero).
 
 ## Próximos pasos
 
-Por orden de prioridad sugerido; nada está empezado.
+Pendientes, por orden de prioridad sugerido.
 
 0. [ ] **Comprobar el arnés de memoria**. `SessionStart` **funciona**: el
    18/11/2026, al reanudar la sesión, inyectó el estado de este fichero y de git.
    Falta ver en una sesión real que `Stop` pide anotar el progreso cuando hay
    trabajo sin registrar (los casos se probaron a mano con un repo de prueba).
-1. [ ] **Clase 3** (19/11/2026): seguir el «Plan de la Clase 3» (abajo),
-   encargo a encargo y con el contrato propuesto antes del código. Para probar
-   los encargos 4-6 hace falta Docker (no instalado en la máquina del ensayo).
+1. [ ] **Clase 3** (19/11/2026): seguir el «Plan de la Clase 3» (abajo);
+   encargos 1 y 2 completados. Para probar los encargos 4-6 hace falta Docker
+   (no instalado en la máquina del ensayo).
 2. [ ] **Clase 2**: seguir el «Plan de la Clase 2» (abajo). El usuario lanza
    los prompts de las diapositivas uno a uno (ensayo). La Clase 2
    está construida; queda la votación (paso 7, en clase). Pendiente: probar con Gemini (solo se ha probado con
@@ -308,6 +310,33 @@ contra esto.
   proponer su hook `_antes_de_peticion` en `Fuente`.
 
 ## Registro de sesiones
+
+### 2026-11-19 — Selector de idioma e informes multilingües
+
+- `src/litmar/web/index.html`: selector para español, portugués de Brasil,
+  inglés y japonés; traduce los rótulos de la interfaz y envía `language` en
+  `POST /revisiones`.
+- `src/litmar/api.py`, `flujo.py`, `agente.py` y `resumen.py`: el idioma se
+  valida y propaga por el flujo completo; los prompts de resumen, síntesis o
+  agente lo reciben, y los encabezados/fallbacks generados por el código se
+  localizan. Español sigue siendo el predeterminado. D-26.
+- README y `AGENTS.md` actualizados. Pruebas focalizadas y suite completa:
+  351 tests; Ruff y formato en verde. Validación con navegador de los cuatro
+  idiomas y del `language: "ja"` enviado por la web con una respuesta simulada;
+  no se hizo una llamada real a un modelo.
+
+### 2026-11-19 — Iconos en los apartados de la web
+
+- Añadidos 🔎 y ✨ a los títulos de Búsqueda y Revisión. Se marcan como
+  decorativos para que no añadan ruido a lectores de pantalla.
+
+### 2026-11-19 — Estética Y2K para la web de la API
+
+- Rediseñada la capa visual de `src/litmar/web/index.html` con reflejos
+  cromados, gradientes violeta/cian, paneles translúcidos y controles brillantes.
+  Se mantuvieron intactos el contrato y el comportamiento de búsqueda/revisión.
+- Comprobación visual en navegador y validación: 343 tests, Ruff y formato en
+  verde.
 
 ### 2026-11-19 — Sesión 3: web en HTML y JavaScript (Clase 3, encargo 2)
 

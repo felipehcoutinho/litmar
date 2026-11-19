@@ -84,12 +84,168 @@
   .informe pre code { padding: 0; background: none; }
   .informe table { margin: 10px 0; }
   [hidden] { display: none !important; }
+
+  /* Y2K: cromo, violeta y reflejos iridiscentes, manteniendo el contrato intacto. */
+  :root {
+    color-scheme: light;
+    --fondo: #eaf3ff;
+    --panel: rgba(255, 255, 255, .9);
+    --texto: #182044;
+    --suave: #55618a;
+    --borde: #c6c8e8;
+    --acento: #7136dc;
+    --acento-texto: #fff;
+    --aviso: #fff7d7;
+    --aviso-borde: #e2bd55;
+    --error: #fff0f5;
+    --error-borde: #ed79a6;
+    --codigo: #eef0ff;
+  }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 12% 8%, rgba(255, 125, 210, .28), transparent 31rem),
+      radial-gradient(ellipse at 90% 14%, rgba(83, 220, 255, .34), transparent 34rem),
+      linear-gradient(145deg, #f8edff 0%, #e8f4ff 48%, #f3edff 100%);
+    color: var(--texto);
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    position: relative;
+    margin: 24px auto 28px;
+    padding: 22px 26px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .95);
+    border-radius: 22px;
+    background: linear-gradient(115deg, rgba(255,255,255,.92), rgba(232,244,255,.78) 48%, rgba(255,235,250,.88));
+    box-shadow: 0 12px 34px rgba(81, 76, 158, .16), inset 0 1px #fff;
+  }
+  header::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 42%;
+    height: 100%;
+    background: linear-gradient(115deg, transparent, rgba(255,255,255,.55), transparent);
+    content: "";
+    pointer-events: none;
+  }
+  header h1 {
+    width: fit-content;
+    background: linear-gradient(100deg, #5d34bb 5%, #e057b7 48%, #188caf 95%);
+    background-clip: text;
+    color: transparent;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -.07em;
+    line-height: 1;
+    -webkit-background-clip: text;
+  }
+  header p { margin-top: 9px; color: var(--suave); }
+  .idioma { flex: 0 0 210px; margin: 0; }
+  .idioma select { width: 100%; }
+  section {
+    border: 1px solid rgba(255, 255, 255, .96);
+    border-radius: 20px;
+    background: var(--panel);
+    box-shadow: 0 10px 28px rgba(72, 76, 145, .13), inset 0 1px #fff;
+    backdrop-filter: blur(12px);
+  }
+  h2 {
+    color: #47268e;
+    font-size: 1.12rem;
+    font-weight: 850;
+    letter-spacing: .075em;
+    text-transform: uppercase;
+  }
+  label, legend { color: #303963; }
+  input[type=text], input[type=number], textarea, select {
+    border: 1px solid #c8c7e7;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #fff, #f5f4ff);
+    box-shadow: inset 0 2px 4px rgba(62, 54, 117, .07), 0 1px #fff;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input[type=checkbox], input[type=radio] { accent-color: #b63dcc; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 3px solid rgba(52, 194, 231, .55);
+    outline-offset: 2px;
+  }
+  input[type=text]:focus, input[type=number]:focus, textarea:focus, select:focus {
+    border-color: #8d5be1;
+    box-shadow: 0 0 0 3px rgba(141, 91, 225, .15), inset 0 2px 4px rgba(62, 54, 117, .06);
+  }
+  button {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.72);
+    border-radius: 999px;
+    background: linear-gradient(115deg, #7739da 0%, #ba42bc 54%, #e04d9b 100%);
+    box-shadow: 0 5px 13px rgba(113, 54, 220, .24), inset 0 1px rgba(255,255,255,.65);
+    text-shadow: 0 1px 1px rgba(39, 20, 86, .28);
+    transition: transform .15s, box-shadow .15s, filter .15s;
+  }
+  button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(113, 54, 220, .3), inset 0 1px rgba(255,255,255,.75);
+    filter: saturate(1.12);
+  }
+  button.secundario {
+    border: 1px solid #aeb8e6;
+    background: linear-gradient(180deg, #fff, #e8f5ff 58%, #e8e4ff);
+    color: #4a348d;
+    text-shadow: none;
+    box-shadow: 0 4px 11px rgba(51, 118, 167, .12), inset 0 1px #fff;
+  }
+  button:disabled { transform: none; }
+  .nota { color: var(--suave); }
+  .mensaje { border-radius: 12px; box-shadow: 0 3px 10px rgba(45, 50, 100, .06); }
+  .aviso { color: #684d08; }
+  .error { color: #872747; }
+  .tabla {
+    overflow: auto;
+    border: 1px solid #d5d4eb;
+    border-radius: 14px;
+    background: rgba(255,255,255,.72);
+  }
+  table { margin: 0; }
+  th {
+    background: linear-gradient(100deg, #eee9ff, #e6f7ff 60%, #ffedf8);
+    color: #47386d;
+  }
+  tbody tr { transition: background-color .12s; }
+  tbody tr:hover { background: rgba(224, 240, 255, .66); }
+  td { border-color: #e3e3f0; }
+  a { text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { color: #bb328a; }
+  .informe { border-color: #d4d0eb; }
+  .informe code, .informe pre { border: 1px solid #d8d8ee; border-radius: 10px; }
+  @media (max-width: 600px) {
+    header { align-items: flex-start; flex-direction: column; margin: 14px auto 20px; padding: 19px; border-radius: 17px; }
+    .idioma { flex-basis: auto; width: min(100%, 300px); }
+    section { padding: 16px; border-radius: 16px; }
+    .fila { gap: 12px; }
+  }
 </style>
 </head>
 <body>
 <header>
-  <h1>litmar</h1>
-  <p>Literatura científica de varias fuentes en una sola biblioteca.</p>
+  <div>
+    <h1>litmar</h1>
+    <p data-i18n="tagline">Literatura científica de varias fuentes en una sola biblioteca.</p>
+  </div>
+  <label class="idioma" for="idioma">
+    <span data-i18n="languageLabel">Idioma</span>
+    <select id="idioma" aria-label="Language">
+      <option value="es">Español</option>
+      <option value="pt-BR">Português (Brasil)</option>
+      <option value="en">English</option>
+      <option value="ja">日本語</option>
+    </select>
+  </label>
 </header>
 
 <main>
@@ -97,61 +253,61 @@
 
   <!-- Búsqueda: GET /buscar -->
   <section>
-    <h2>Búsqueda</h2>
+    <h2><span aria-hidden="true">🔎</span> <span data-i18n="searchTitle">Búsqueda</span></h2>
     <form id="form-busqueda">
       <div class="fila">
         <div class="ancho">
-          <label for="consulta">Consulta</label>
+          <label for="consulta"><span data-i18n="queryLabel">Consulta</span></label>
           <input id="consulta" type="text" required placeholder="posidonia carbon">
         </div>
         <div>
-          <label for="n">Artículos por fuente</label>
+          <label for="n"><span data-i18n="nSourceLabel">Artículos por fuente</span></label>
           <input id="n" type="number" min="1" max="50" value="10" required>
         </div>
         <div>
-          <label for="desde">Año mínimo</label>
+          <label for="desde"><span data-i18n="sinceLabel">Año mínimo</span></label>
           <input id="desde" type="number" min="1000" max="2100" placeholder="Cualquiera">
         </div>
       </div>
       <fieldset>
-        <legend>Fuentes</legend>
-        <div id="fuentes" class="opciones"><span class="nota">Cargando fuentes…</span></div>
+        <legend data-i18n="sourcesLegend">Fuentes</legend>
+        <div id="fuentes" class="opciones"><span class="nota" data-i18n="loadingSources">Cargando fuentes…</span></div>
       </fieldset>
-      <button id="boton-buscar" type="submit">Buscar</button>
-      <p class="nota">Las fuentes y el año mínimo también se usan en la revisión.</p>
+      <button id="boton-buscar" type="submit" data-i18n="searchButton">Buscar</button>
+      <p class="nota" data-i18n="sharedFilters">Las fuentes y el año mínimo también se usan en la revisión.</p>
     </form>
     <div id="resultado-busqueda"></div>
   </section>
 
   <!-- Revisión: POST /revisiones -->
   <section>
-    <h2>Revisión</h2>
+    <h2><span aria-hidden="true">✨</span> <span data-i18n="reviewTitle">Revisión</span></h2>
     <form id="form-revision">
       <div class="fila">
         <div class="ancho">
-          <label for="pregunta">Pregunta de investigación</label>
+          <label for="pregunta"><span data-i18n="questionLabel">Pregunta de investigación</span></label>
           <textarea id="pregunta" required
             placeholder="¿Cómo afecta el calentamiento a las praderas de Posidonia oceanica?"></textarea>
         </div>
       </div>
       <div class="fila">
         <fieldset>
-          <legend>Modo</legend>
+          <legend data-i18n="modeLegend">Modo</legend>
           <div class="opciones">
-            <label><input type="radio" name="modo" value="flujo" checked> Flujo (pasos fijos)</label>
-            <label><input type="radio" name="modo" value="agente"> Agente (decide el modelo)</label>
+            <label><input type="radio" name="modo" value="flujo" checked> <span data-i18n="modeFlow">Flujo (pasos fijos)</span></label>
+            <label><input type="radio" name="modo" value="agente"> <span data-i18n="modeAgent">Agente (decide el modelo)</span></label>
           </div>
         </fieldset>
         <div>
-          <label for="n-revision">Artículos para el informe</label>
+          <label for="n-revision"><span data-i18n="nReviewLabel">Artículos para el informe</span></label>
           <input id="n-revision" type="number" min="1" max="10" value="6" required>
         </div>
       </div>
-      <div class="mensaje aviso">
-        Una revisión tarda <strong>varios minutos</strong>: el servidor busca, lee los
-        resúmenes con un modelo de lenguaje y escribe el informe. No cierres la página.
+      <div class="mensaje aviso" data-i18n="reviewNotice">
+        Una revisión tarda varios minutos: el servidor busca, lee los resúmenes con
+        un modelo de lenguaje y escribe el informe. No cierres la página.
       </div>
-      <button id="boton-revisar" type="submit">Revisar</button>
+      <button id="boton-revisar" type="submit" data-i18n="reviewButton">Revisar</button>
     </form>
     <div id="resultado-revision"></div>
   </section>
@@ -160,13 +316,132 @@
 <script>
 "use strict";
 
-// --- Peticiones a la API -------------------------------------------------------
-
-// Nombres de los campos del contrato tal como los ve el usuario en la página.
-const ETIQUETAS = {
-  consulta: "Consulta", fuente: "Fuentes", n: "Número de artículos", desde: "Año mínimo",
-  question: "Pregunta", mode: "Modo", sources: "Fuentes", since: "Año mínimo",
+const TRADUCCIONES = {
+  es: {
+    tagline: "Literatura científica de varias fuentes en una sola biblioteca.",
+    languageLabel: "Idioma", searchTitle: "Búsqueda", queryLabel: "Consulta",
+    nSourceLabel: "Artículos por fuente", sinceLabel: "Año mínimo", sourcesLegend: "Fuentes",
+    loadingSources: "Cargando fuentes…", searchButton: "Buscar",
+    sharedFilters: "Las fuentes y el año mínimo también se usan en la revisión.",
+    reviewTitle: "Revisión", questionLabel: "Pregunta de investigación", modeLegend: "Modo",
+    modeFlow: "Flujo (pasos fijos)", modeAgent: "Agente (decide el modelo)",
+    nReviewLabel: "Artículos para el informe",
+    reviewNotice: "Una revisión tarda varios minutos: el servidor busca, lee los resúmenes con un modelo de lenguaje y escribe el informe. No cierres la página.",
+    reviewButton: "Revisar", notConnected: "No se pudo conectar con la API. ¿Está arrancado «litmar servir»?",
+    invalidData: "Hay datos que la API no acepta:", field_query: "Consulta",
+    field_question: "Pregunta", field_mode: "Modo", field_sources: "Fuentes", field_n: "Número de artículos",
+    field_since: "Año mínimo", error502: "la API no está disponible o tardó demasiado.",
+    httpError: "El servidor respondió HTTP {code}.", noSources: "Elige al menos una fuente.",
+    searching: "Buscando…", someSourcesFailed: "Algunas fuentes no respondieron; se muestran las demás:",
+    articleCount: "{count} artículos (sin DOI repetidos).", title: "Título",
+    authors: "Autores", year: "Año", journal: "Revista", citations: "Citas", doi: "DOI",
+    citationsNA: "No disponible", noSourcesForReview: "Elige al menos una fuente en «Búsqueda».",
+    reviewRunning: "Revisando en modo {mode}… {clock} (suele tardar varios minutos)",
+    reviewDone: "Revisión terminada en {minutes} min: {count} artículos citados.",
+    downloadBib: "Descargar BibTeX ({count} citados)",
+    downloadReport: "Descargar informe (Markdown)",
+  },
+  "pt-BR": {
+    tagline: "Literatura científica de várias fontes em uma única biblioteca.",
+    languageLabel: "Idioma", searchTitle: "Busca", queryLabel: "Consulta",
+    nSourceLabel: "Artigos por fonte", sinceLabel: "Ano mínimo", sourcesLegend: "Fontes",
+    loadingSources: "Carregando fontes…", searchButton: "Buscar",
+    sharedFilters: "As fontes e o ano mínimo também são usados na revisão.",
+    reviewTitle: "Revisão", questionLabel: "Pergunta de pesquisa", modeLegend: "Modo",
+    modeFlow: "Fluxo (etapas fixas)", modeAgent: "Agente (o modelo decide)",
+    nReviewLabel: "Artigos para o relatório",
+    reviewNotice: "Uma revisão pode levar vários minutos: o servidor busca, lê os resumos com um modelo de linguagem e escreve o relatório. Não feche a página.",
+    reviewButton: "Revisar", notConnected: "Não foi possível conectar à API. «litmar servir» está em execução?",
+    invalidData: "A API não aceita alguns dados:", field_query: "Consulta",
+    field_question: "Pergunta", field_mode: "Modo", field_sources: "Fontes", field_n: "Número de artigos",
+    field_since: "Ano mínimo", error502: "a API está indisponível ou demorou demais.",
+    httpError: "O servidor respondeu HTTP {code}.", noSources: "Escolha pelo menos uma fonte.",
+    searching: "Buscando…", someSourcesFailed: "Algumas fontes falharam; os demais resultados são exibidos:",
+    articleCount: "{count} artigos (sem DOIs duplicados).", title: "Título",
+    authors: "Autores", year: "Ano", journal: "Revista", citations: "Citações", doi: "DOI",
+    citationsNA: "Indisponível", noSourcesForReview: "Escolha pelo menos uma fonte em «Busca».",
+    reviewRunning: "Revisando no modo {mode}… {clock} (geralmente leva vários minutos)",
+    reviewDone: "Revisão concluída em {minutes} min: {count} artigos citados.",
+    downloadBib: "Baixar BibTeX ({count} citados)",
+    downloadReport: "Baixar relatório (Markdown)",
+  },
+  en: {
+    tagline: "Scientific literature from multiple sources in one library.",
+    languageLabel: "Language", searchTitle: "Search", queryLabel: "Query",
+    nSourceLabel: "Articles per source", sinceLabel: "From year", sourcesLegend: "Sources",
+    loadingSources: "Loading sources…", searchButton: "Search",
+    sharedFilters: "The selected sources and year are also used for the review.",
+    reviewTitle: "Review", questionLabel: "Research question", modeLegend: "Mode",
+    modeFlow: "Flow (fixed steps)", modeAgent: "Agent (model decides)",
+    nReviewLabel: "Articles for the report",
+    reviewNotice: "A review can take several minutes: the server searches, reads abstracts with a language model, and writes the report. Keep this page open.",
+    reviewButton: "Review", notConnected: "Could not connect to the API. Is «litmar servir» running?",
+    invalidData: "The API rejected some input:", field_query: "Query",
+    field_question: "Question", field_mode: "Mode", field_sources: "Sources", field_n: "Number of articles",
+    field_since: "From year", error502: "the API is unavailable or took too long.",
+    httpError: "The server responded with HTTP {code}.", noSources: "Select at least one source.",
+    searching: "Searching…", someSourcesFailed: "Some sources failed; showing the others:",
+    articleCount: "{count} articles (duplicate DOIs removed).", title: "Title",
+    authors: "Authors", year: "Year", journal: "Journal", citations: "Citations", doi: "DOI",
+    citationsNA: "Unavailable", noSourcesForReview: "Select at least one source in Search.",
+    reviewRunning: "Reviewing in {mode} mode… {clock} (usually takes several minutes)",
+    reviewDone: "Review completed in {minutes} min: {count} cited articles.",
+    downloadBib: "Download BibTeX ({count} cited)",
+    downloadReport: "Download report (Markdown)",
+  },
+  ja: {
+    tagline: "複数の情報源の学術文献を1つのライブラリにまとめます。",
+    languageLabel: "表示言語", searchTitle: "検索", queryLabel: "検索語",
+    nSourceLabel: "情報源ごとの論文数", sinceLabel: "開始年", sourcesLegend: "情報源",
+    loadingSources: "情報源を読み込み中…", searchButton: "検索",
+    sharedFilters: "選択した情報源と年はレビューにも使用されます。",
+    reviewTitle: "文献レビュー", questionLabel: "研究上の質問", modeLegend: "モード",
+    modeFlow: "フロー（固定ステップ）", modeAgent: "エージェント（モデルが決定）",
+    nReviewLabel: "レポートに含める論文数",
+    reviewNotice: "レビューには数分かかることがあります。サーバーが検索し、言語モデルで要約を読み、レポートを作成します。このページを閉じないでください。",
+    reviewButton: "レビューする", notConnected: "APIに接続できません。「litmar servir」が起動しているか確認してください。",
+    invalidData: "APIが入力を受け付けませんでした：", field_query: "検索語",
+    field_question: "質問", field_mode: "モード", field_sources: "情報源", field_n: "論文数",
+    field_since: "開始年", error502: "APIが利用できないか、応答に時間がかかりすぎています。",
+    httpError: "サーバーがHTTP {code}を返しました。", noSources: "情報源を1つ以上選択してください。",
+    searching: "検索中…", someSourcesFailed: "一部の情報源でエラーが発生しました。他の結果を表示します：",
+    articleCount: "{count}件の論文（DOIの重複なし）。", title: "タイトル",
+    authors: "著者", year: "年", journal: "雑誌", citations: "被引用数", doi: "DOI",
+    citationsNA: "不明", noSourcesForReview: "「検索」で情報源を1つ以上選択してください。",
+    reviewRunning: "{mode}モードでレビュー中… {clock}（通常、数分かかります）",
+    reviewDone: "{minutes}分でレビューが完了しました：引用論文 {count} 件。",
+    downloadBib: "BibTeXをダウンロード（引用 {count} 件）",
+    downloadReport: "レポートをダウンロード（Markdown）",
+  },
 };
+
+function t(clave, valores = {}) {
+  let traduccion = TRADUCCIONES[$("idioma").value][clave] || clave;
+  for (const [nombre, valor] of Object.entries(valores)) {
+    traduccion = traduccion.replaceAll(`{${nombre}}`, valor);
+  }
+  return traduccion;
+}
+
+function aplicarIdioma() {
+  const idioma = $("idioma").value;
+  document.documentElement.lang = idioma;
+  document.querySelectorAll("[data-i18n]").forEach((nodo) => {
+    nodo.textContent = t(nodo.dataset.i18n);
+  });
+  $("consulta").placeholder = idioma === "ja" ? "海草藻場の炭素貯留" : "posidonia carbon";
+  $("desde").placeholder = idioma === "es" ? "Cualquiera"
+    : idioma === "pt-BR" ? "Qualquer ano" : idioma === "en" ? "Any year" : "指定なし";
+  $("pregunta").placeholder = idioma === "es"
+    ? "¿Cómo afecta el calentamiento a las praderas de Posidonia oceanica?"
+    : idioma === "pt-BR"
+      ? "Como o aquecimento afeta as pradarias de Posidonia oceanica?"
+      : idioma === "en"
+        ? "How does warming affect Posidonia oceanica meadows?"
+        : "海水温の上昇はPosidonia oceanicaの藻場にどのような影響を与えますか？";
+}
+
+// --- Peticiones a la API -------------------------------------------------------
 
 // Hace la petición y devuelve el JSON; si algo falla, lanza un Error con un
 // mensaje para el usuario (o una lista de mensajes, en `error.detalles`).
@@ -175,7 +450,7 @@ async function pedir(ruta, opciones) {
   try {
     respuesta = await fetch(ruta, opciones);
   } catch {
-    throw new Error("No se pudo conectar con la API. ¿Está arrancado «litmar servir»?");
+    throw new Error(t("notConnected"));
   }
   let datos = null;
   try {
@@ -191,24 +466,27 @@ function errorDeLaApi(codigo, datos) {
   const detalle = datos && datos.detail;
   if (codigo === 422 && Array.isArray(detalle)) {
     // FastAPI explica cada dato inválido: dónde (loc) y qué pasa (msg).
-    const error = new Error("Hay datos que la API no acepta:");
+    const error = new Error(t("invalidData"));
     error.detalles = detalle.map((d) => {
       const campo = d.loc.filter((parte) => parte !== "query" && parte !== "body")[0];
       const mensaje = String(d.msg).replace(/^Value error, /, "");
-      return `${ETIQUETAS[campo] || campo}: ${mensaje}`;
+      const etiqueta = TRADUCCIONES[$("idioma").value][`field_${campo}`] || campo;
+      return `${etiqueta}: ${mensaje}`;
     });
     return error;
   }
   if (typeof detalle === "string") return new Error(detalle);
   if (codigo === 502 || codigo === 504) {
-    return new Error(`El servidor respondió HTTP ${codigo}: la API no está disponible o tardó demasiado.`);
+    return new Error(`${t("httpError", { code: codigo })} ${t("error502")}`);
   }
-  return new Error(`El servidor respondió HTTP ${codigo}.`);
+  return new Error(t("httpError", { code: codigo }));
 }
 
 // --- Utilidades de la página ---------------------------------------------------
 
 const $ = (id) => document.getElementById(id);
+
+$("idioma").addEventListener("change", aplicarIdioma);
 
 function elemento(etiqueta, texto, clase) {
   const nodo = document.createElement(etiqueta);
@@ -293,7 +571,7 @@ async function buscar(evento) {
   const destino = $("resultado-busqueda");
   const fuentes = fuentesElegidas();
   if (!fuentes.length) {
-    destino.replaceChildren(mensaje("aviso", "Elige al menos una fuente."));
+    destino.replaceChildren(mensaje("aviso", t("noSources")));
     return;
   }
   const parametros = new URLSearchParams({ consulta: $("consulta").value, n: $("n").value });
@@ -301,7 +579,7 @@ async function buscar(evento) {
   if (anioMinimo() !== null) parametros.set("desde", anioMinimo());
 
   $("boton-buscar").disabled = true;
-  destino.replaceChildren(elemento("p", "Buscando…", "estado"));
+  destino.replaceChildren(elemento("p", t("searching"), "estado"));
   try {
     const datos = await pedir(`/buscar?${parametros}`);
     mostrarArticulos(destino, datos);
@@ -315,14 +593,14 @@ async function buscar(evento) {
 function mostrarArticulos(destino, datos) {
   const partes = [];
   if (datos.errors.length) {
-    partes.push(mensaje("aviso", "Algunas fuentes no respondieron; se muestran las demás:", datos.errors));
+    partes.push(mensaje("aviso", t("someSourcesFailed"), datos.errors));
   }
-  partes.push(elemento("p", `${datos.articles.length} artículos (sin DOI repetidos).`, "estado"));
+  partes.push(elemento("p", t("articleCount", { count: datos.articles.length }), "estado"));
   if (datos.articles.length) {
     const tabla = elemento("table");
     const cabecera = elemento("tr");
-    for (const titulo of ["Título", "Autores", "Año", "Revista", "Citas", "DOI"]) {
-      cabecera.append(elemento("th", titulo));
+    for (const clave of ["title", "authors", "year", "journal", "citations", "doi"]) {
+      cabecera.append(elemento("th", t(clave)));
     }
     tabla.append(elemento("thead"), elemento("tbody"));
     tabla.tHead.append(cabecera);
@@ -356,7 +634,7 @@ async function revisar(evento) {
   const destino = $("resultado-revision");
   const fuentes = fuentesElegidas();
   if (!fuentes.length) {
-    destino.replaceChildren(mensaje("aviso", "Elige al menos una fuente en «Búsqueda»."));
+    destino.replaceChildren(mensaje("aviso", t("noSourcesForReview")));
     return;
   }
   const cuerpo = {
@@ -365,6 +643,7 @@ async function revisar(evento) {
     sources: fuentes,
     n: Number($("n-revision").value),
     since: anioMinimo(),
+    language: $("idioma").value,
   };
 
   // Mientras espera: botón desactivado y un reloj, porque la API no informa del avance.
@@ -375,7 +654,10 @@ async function revisar(evento) {
   const actualizar = () => {
     const segundos = Math.floor((Date.now() - inicio) / 1000);
     const reloj = `${Math.floor(segundos / 60)}:${String(segundos % 60).padStart(2, "0")}`;
-    estado.textContent = `Revisando en modo ${cuerpo.mode}… ${reloj} (suele tardar varios minutos)`;
+    estado.textContent = t("reviewRunning", {
+      mode: cuerpo.mode === "flujo" ? t("modeFlow") : t("modeAgent"),
+      clock: reloj,
+    });
   };
   actualizar();
   const temporizador = setInterval(actualizar, 1000);
@@ -398,12 +680,15 @@ async function revisar(evento) {
 function mostrarRevision(destino, datos, milisegundos) {
   const partes = [];
   const minutos = (milisegundos / 60000).toFixed(1).replace(".", ",");
-  partes.push(elemento("p", `Revisión terminada en ${minutos} min: ${datos.cited.length} artículos citados.`, "estado"));
+  partes.push(elemento("p", t("reviewDone", {
+    minutes: minutos,
+    count: datos.cited.length,
+  }), "estado"));
   if (datos.warnings.length) partes.push(mensaje("aviso", "Avisos de la revisión:", datos.warnings));
   const descargas = elemento("div", undefined, "descargas");
   descargas.append(
-    botonDescarga(`Descargar BibTeX (${datos.cited.length} citados)`, datos.bibtex, "revision.bib", "application/x-bibtex"),
-    botonDescarga("Descargar informe (Markdown)", datos.report, "revision.md", "text/markdown"),
+    botonDescarga(t("downloadBib", { count: datos.cited.length }), datos.bibtex, "revision.bib", "application/x-bibtex"),
+    botonDescarga(t("downloadReport"), datos.report, "revision.md", "text/markdown"),
   );
   partes.push(descargas);
   const informe = elemento("article", undefined, "informe");
@@ -545,6 +830,7 @@ function lista(lineas, inicio) {
 
 $("form-busqueda").addEventListener("submit", buscar);
 $("form-revision").addEventListener("submit", revisar);
+aplicarIdioma();
 cargarFuentes();
 </script>
 </body>

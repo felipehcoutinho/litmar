@@ -281,17 +281,19 @@ uv run litmar servir --host 0.0.0.0 --puerto 8080   # accesible desde la red
 
 En <http://127.0.0.1:8000/> hay una **página web** que usa la API: búsqueda con
 fuentes y año mínimo, tabla con los DOI enlazados y una revisión que muestra el
-informe y deja descargar el BibTeX. Es un solo fichero (`src/litmar/web/index.html`,
-HTML, CSS y JavaScript, sin npm ni compilación) y solo usa rutas relativas
-(`/fuentes`, `/buscar`, `/revisiones`), así que funciona en cualquier servidor y
-puerto. En <http://127.0.0.1:8000/docs> hay una página para probar cada ruta.
+informe y deja descargar el BibTeX. El menú permite usar la interfaz en español,
+portugués de Brasil, inglés o japonés; el informe se genera en el idioma elegido.
+Es un solo fichero (`src/litmar/web/index.html`, HTML, CSS y JavaScript, sin npm
+ni compilación) y solo usa rutas relativas (`/fuentes`, `/buscar`, `/revisiones`),
+así que funciona en cualquier servidor y puerto. En <http://127.0.0.1:8000/docs>
+hay una página para probar cada ruta.
 
 | Ruta | Qué hace | Errores |
 | --- | --- | --- |
 | `GET /salud` | `{"status": "ok", "version": …}` | — |
 | `GET /fuentes` | Fuentes disponibles: `[{"id": "europepmc", "name": "Europe PMC"}, …]` | — |
 | `GET /buscar` | `consulta`, `fuente` (repetible; `openalex` por defecto), `n` (1–50 por fuente), `desde` (año). Devuelve `{query, articles, errors, failed}` | 422 datos inválidos; 502 si fallan todas las fuentes |
-| `POST /revisiones` | Cuerpo `{question, mode: "flujo"\|"agente", sources, n (1–10), since}`. Devuelve `{question, mode, report, bibtex, cited, queries, warnings}` | 422 datos inválidos; 503 falta el modelo en el `.env`; 502 el modelo falló |
+| `POST /revisiones` | Cuerpo `{question, mode: "flujo"\|"agente", sources, n (1–10), since, language: "es"\|"pt-BR"\|"en"\|"ja"}` (`language` predeterminado: `"es"`). Devuelve `{question, mode, language, report, bibtex, cited, queries, warnings}` | 422 datos inválidos; 503 falta el modelo en el `.env`; 502 el modelo falló |
 
 ```bash
 curl "http://127.0.0.1:8000/buscar?consulta=posidonia&fuente=openalex&fuente=europepmc&n=2"
@@ -303,7 +305,8 @@ curl -X POST http://127.0.0.1:8000/revisiones -H "Content-Type: application/json
   `errors`; solo si fallan todas responde 502.
 - `/revisiones` tarda varios minutos y espera hasta terminar. Devuelve el informe en
   Markdown y el BibTeX de lo citado, sin guardar nada en disco. En modo agente no se
-  piden aprobaciones. Los pasos se ven en la terminal del servidor.
+  piden aprobaciones. Los pasos se ven en la terminal del servidor. `language`
+  selecciona el idioma del informe; si se omite, se usa español.
 - La API no tiene autenticación: está pensada para usarla en tu ordenador o en una red
   de confianza. Quien pueda llamar a `/revisiones` gasta tu clave del modelo.
 

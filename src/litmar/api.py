@@ -24,6 +24,7 @@ from litmar import agente, flujo, llm
 from litmar.articulo import Articulo
 from litmar.busqueda import buscar_en_fuentes
 from litmar.configuracion import fuentes_disponibles, id_fuente, nombre_fuente
+from litmar.idiomas import Idioma
 
 MAX_RESULTADOS = 50  # artículos por fuente en /buscar
 
@@ -105,11 +106,16 @@ class RevisionEntrada(BaseModel):
         description="Artículos que se resumen (flujo) o que elige el agente.",
     )
     since: int | None = Field(None, description="Solo artículos de ese año o posteriores.")
+    language: Idioma = Field(
+        "es",
+        description="Idioma de la interfaz y del informe: es, pt-BR, en o ja.",
+    )
 
 
 class RevisionSalida(BaseModel):
     question: str
     mode: Literal["flujo", "agente"]
+    language: Idioma
     report: str = Field(description="El informe en Markdown, con referencias y avisos.")
     bibtex: str = Field(description="BibTeX de los artículos citados (solo de esos).")
     cited: list[ArticuloSalida]
@@ -208,6 +214,7 @@ def revisiones(entrada: RevisionEntrada) -> RevisionSalida:
             fuentes=list(dict.fromkeys(entrada.sources)),
             n=entrada.n,
             desde=entrada.since,
+            idioma=entrada.language,
             mostrar=_registro.info,
         )
     except Exception as exc:  # p. ej. un 429 del proveedor
@@ -221,7 +228,8 @@ def revisiones(entrada: RevisionEntrada) -> RevisionSalida:
     return RevisionSalida(
         question=entrada.question,
         mode=entrada.mode,
-        report=flujo.informe_markdown(estado),
+        language=entrada.language,
+        report=flujo.informe_markdown(estado, entrada.language),
         bibtex=citados.a_bibtex(),
         cited=[ArticuloSalida.desde(a) for a in citados],
         queries=estado.get("queries", []),
